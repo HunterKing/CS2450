@@ -12,3 +12,6 @@ Homework Assignment 3, takes two characters from user as input and then prints t
 
 ### hwPrintN
 Homework Assignment 4, takes a value set in R1 before run between 0 and F, and prints from 0 to (n-1). Meant to make use of BR instruction as a loop. Written for LC-3 ASM.
+
+### hwGet1Num
+Homework Assignment 5, first use of assembler. Takes input from user, if input is numeric char 0-9 and leave stored in R0 and return from subroutine. If character is outside of the 0-9 range, prompt user for another character.
