@@ -12,7 +12,7 @@ int getMask(int startbit, int endbit, int bitval)
 		return 0;
 	for (int i = 0; i < 32; i++)
 	{
-		if (i >= startbit && i <= endbit)
+		if (i >= startbit && i <= endbit) //Check that the current bit is within range before setting bit.
 			mask = mask | startval;
 		startval = startval << 1;
 	}
@@ -26,7 +26,7 @@ int getSubInt(int startbit, int endbit, int value)
 {
 	int mask = getMask(startbit, endbit, 1);
 	unsigned int retValue = value & mask; //Use uint to avoid negative sign extension.
-	retValue = retValue >> startbit;
+	retValue = retValue >> startbit; //Shift value down so that our "sub-int" is in the low order.
 	return retValue;
 }
 
@@ -36,8 +36,8 @@ void printDashHex(int val) //Construction Zone
 	int storedVal[8];
 	for (int i = 0; i < 8; i++)
 	{
-		storedVal[i] = (unsigned)(val & mask) >> 28;
-		val = val << 4;
+		storedVal[i] = (unsigned)(val & mask) >> 28; //Place the unsigned value of 4 bits shifted to low order into array.
+		val = val << 4; //shift value left 4 bits to get the next hex digit.
 	}
 	for (int i = 0; i < 15; i++)
 	{
