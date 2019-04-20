@@ -8,6 +8,18 @@ void printAssembly(char filename[]);
 void printBr(int, int);
 void printAdd(int);
 void printLd(int, int);
+void printSt(int, int);
+void printJsrJsrr(int, int);
+void printAnd(int);
+void printLdr(int);
+void printStr(int);
+void printRti();
+void printNot(int);
+void printLdi(int, int);
+void printSti(int, int);
+void printJmpRet(int);
+void printLea(int, int);
+void printTrap(int);
 
 //**************************************************
 //Make sure to comment main out before submitting
@@ -52,43 +64,43 @@ void printAssembly(char filename[])
           printLd(instrNoOp, pc);
           break;
         case 3:
-          printSt();
+          printSt(instrNoOp, pc);
           break;
-        /*case 4:
-          printJsrJsrr();
+        case 4:
+          printJsrJsrr(instrNoOp, pc);
           break;
         case 5:
-          printAnd();
+          printAnd(instrNoOp);
           break;
         case 6:
-          printLdr();
+          printLdr(instrNoOp);
           break;
         case 7:
-          printStr();
+          printStr(instrNoOp);
           break;
         case 8:
           printRti();
           break;
         case 9:
-          printNot();
+          printNot(instrNoOp);
           break;
         case 10:
-          printLdi();
+          printLdi(instrNoOp, pc);
           break;
         case 11:
-          printSti();
+          printSti(instrNoOp, pc);
           break;
         case 12:
-          printJmpRet();
+          printJmpRet(instrNoOp);
           break;
         case 13:
           break;
         case 14:
-          printLea();
+          printLea(instrNoOp, pc);
           break;
         case 15:
-          printTrap();
-          break;*/
+          printTrap(instrNoOp);
+          break;
         default:
           break;
       }
@@ -146,4 +158,69 @@ void printSt(int instruction, int pc)
   int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("ST\tR%d, x%d\n", destReg, pc + offset);
+}
+
+void printJsrJsrr(int instuction, int pc)
+{
+  if(instruction >> 11)
+  {
+    int offset = (instruction & 0x07FF) << 21;
+    offset = offset >> 21;
+    printf("JSR\tx%d", pc + offset);
+  }
+  else
+  {
+    int baseReg = (instruction & 0x01C0) >> 6;
+    print("JSRR\tR%d", baseReg);
+  }
+}
+
+void printAnd(int instruction)
+{
+  printf("\n");
+}
+
+void printLdr(int instruction)
+{
+  printf("\n");
+}
+
+void printStr(int instruction)
+{
+  printf("\n");
+}
+
+void printRti()
+{
+  printf("RTI");
+}
+
+void printNot(int instruction)
+{
+  printf("\n");
+}
+
+void printLdi(int instruction, int pc)
+{
+  printf("\n");
+}
+
+void printSti(int instruction, int pc)
+{
+  printf("\n");
+}
+
+void printJmpRet(int instruction)
+{
+  printf("\n");
+}
+
+void printLea(int instruction, int pc)
+{
+  printf("\n");
+}
+
+void printTrap(int)
+{
+  printf("\n");
 }
