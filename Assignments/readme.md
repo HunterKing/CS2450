@@ -18,3 +18,6 @@ Using a decoder and D-Latches, make circuits that:
 1. Count up from 00 to 11 and then pause.
 2. Count up to 11 and repeat, unless a toggle switch is set to 1, then flash 00 and 11. If SW is 1 and the machine is on any other state, return to 00.
 3. Count up to 11 and stop if SW is 1, and reset to 00 if it is 0.
+
+### Program 6: LC-3 Disassembler
+Taking a file as input, disassemble LC-3 from hex values into Assembly code.
