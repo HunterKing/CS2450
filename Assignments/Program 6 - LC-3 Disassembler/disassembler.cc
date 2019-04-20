@@ -22,17 +22,11 @@ void printJmpRet(int);
 void printLea(int, int);
 void printTrap(int);
 
-//**************************************************
-//Make sure to comment main out before submitting
-//**************************************************
-
 int main()
 {
 	char filename[] = "test1.hex";
 	printAssembly(filename);
 }
-
-
 
 void printAssembly(char filename[])
 {
@@ -48,11 +42,9 @@ void printAssembly(char filename[])
     fscanf(infile, "%x", &pc); //Read the first hex val as the starting pc.
     while (fscanf(infile, "%x", &instruction) != EOF && count < LIMIT) {
       count++;  //Count number of lines for limit
-      //Remove the print and put your code here
-      //printf("%X\n", instruction);
       pc++; //Increment the PC
       int opcode = instruction >> 12; //Figure out the opcode from the high 4 bits. 
-      int instrNoOp = instruction & 0x0FFF;
+      int instrNoOp = instruction & 0x0FFF; //Trim the opcode from the instruction to pass.
       switch(opcode)
       {
         case 0:
@@ -105,7 +97,6 @@ void printAssembly(char filename[])
         default:
           break;
       }
-      //Pass the function the full instruction and the PC, but only if necessary.
     }
   }
 }
@@ -115,7 +106,7 @@ void printBr(int instruction, int pc)
   int n = (instruction & 0x0800) >> 11;
   int z = (instruction & 0x0400) >> 10;
   int p = (instruction & 0x0200) >> 9;
-  int offset = (instruction & PCOFFSET9) << 23;
+  int offset = (instruction & PCOFFSET9) << 23; //Mask off offset bits, then shift to correct sign extension.
   offset = offset >> 23;
   printf("BR");
   if(n)
@@ -129,12 +120,12 @@ void printBr(int instruction, int pc)
 
 void printAdd(int instruction)
 {
-  int destReg = (instruction & DESTREG) >> 9;
-  int srcRegOne = (instruction & BASESRCREG) >> 6;
+  int destReg = (instruction & DESTREG) >> 9; //Mask off destination register and shift right to get decimal val.
+  int srcRegOne = (instruction & BASESRCREG) >> 6; 
   printf("ADD\tR%d, R%d, ", destReg, srcRegOne);
   if(instruction & 0x0020) //check if bit 5 is set to 1
   {
-    int immediate = (instruction & 0x0001F) << 27; //Shift immediate add left in order to sign extend correctly.
+    int immediate = (instruction & 0x0001F) << 27;
     immediate = immediate >> 27;
     printf("#%d\n", immediate);
   } 
@@ -163,7 +154,7 @@ void printSt(int instruction, int pc)
 
 void printJsrJsrr(int instruction, int pc)
 {
-  if(instruction >> 11)
+  if(instruction >> 11) //check bit 12 to determine if JSR or JSRR was called.
   {
     int offset = (instruction & 0x07FF) << 21;
     offset = offset >> 21;
