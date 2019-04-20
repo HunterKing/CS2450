@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #define LIMIT 40
-#define DESTREG 0x00E0
-#define PCOFFSET9 0x01FF
 
 void printAssembly(char filename[]);
 void printBr(int, int);
@@ -13,7 +11,7 @@ void printJsrJsrr(int, int);
 void printAnd(int);
 void printLdr(int);
 void printStr(int);
-void printRti();
+void printRti(int);
 void printNot(int);
 void printLdi(int, int);
 void printSti(int, int);
@@ -79,7 +77,7 @@ void printAssembly(char filename[])
           printStr(instrNoOp);
           break;
         case 8:
-          printRti();
+          printRti(instrNoOp);
           break;
         case 9:
           printNot(instrNoOp);
@@ -114,7 +112,7 @@ void printBr(int instruction, int pc)
   int n = (instruction & 0x0800) >> 11;
   int z = (instruction & 0x0400) >> 10;
   int p = (instruction & 0x0200) >> 9;
-  int offset = (instruction & PCOFFSET9) << 23;
+  int offset = (instruction & 0x01FF) << 23;
   offset = offset >> 23;
   printf("BR");
   if(n)
@@ -123,12 +121,12 @@ void printBr(int instruction, int pc)
     printf("Z");
   if(p)
     printf("P");
-  printf("\tx%d\n", pc + offset);
+  printf("\tx%X\n", pc + offset);
 }
 
 void printAdd(int instruction)
 {
-  int destReg = (instruction & DESTREG) >> 9;
+  int destReg = (instruction & 0x00E0) >> 9;
   int srcRegOne = (instruction & 0x01C0) >> 6;
   printf("ADD\tR%d, R%d, ", destReg, srcRegOne);
   if(instruction & 0x0020) //check if bit 5 is set to 1
@@ -146,81 +144,143 @@ void printAdd(int instruction)
 
 void printLd(int instruction, int pc)
 {
-  int destReg = (instruction & DESTREG) >> 9;
-  int offset = (instruction & PCOFFSET9) << 23;
+  int destReg = (instruction & 0x00E0) >> 9;
+  int offset = (instruction & 0x01FF) << 23;
   offset = offset >> 23;
-  printf("LD\tR%d, x%d\n", destReg, pc + offset);
+  printf("LD\tR%d, x%X\n", destReg, pc + offset);
 }
 
 void printSt(int instruction, int pc)
 {
-  int destReg = (instruction & DESTREG) >> 9;
-  int offset = (instruction & PCOFFSET9) << 23;
+  int destReg = (instruction & 0x00E0) >> 9;
+  int offset = (instruction & 0x01FF) << 23;
   offset = offset >> 23;
-  printf("ST\tR%d, x%d\n", destReg, pc + offset);
+  printf("ST\tR%d, x%X\n", destReg, pc + offset);
 }
 
-void printJsrJsrr(int instuction, int pc)
+void printJsrJsrr(int instruction, int pc)
 {
   if(instruction >> 11)
   {
     int offset = (instruction & 0x07FF) << 21;
     offset = offset >> 21;
-    printf("JSR\tx%d", pc + offset);
+    printf("JSR\tx%X\n", pc + offset);
   }
   else
   {
     int baseReg = (instruction & 0x01C0) >> 6;
-    print("JSRR\tR%d", baseReg);
+    printf("JSRR\tR%d\n", baseReg);
   }
 }
 
 void printAnd(int instruction)
 {
-  printf("\n");
+  int destReg = (instruction & 0x00E0) >> 9;
+  int srcRegOne = (instruction & 0x01C0) >> 6;
+  if((instruction & 0x0020) >> 5)
+  {
+    int immediate = (instruction & 0x001F) << 27;
+    immediate = immediate >> 27;
+    printf("AND\tR%d, R%d, #%d\n", destReg, srcRegOne, immediate);
+  }
+  else
+  {
+    int srcRegTwo = instruction & 0x0007;
+    printf("AND\tR%d, R%d, R%d\n", destReg, srcRegOne, srcRegTwo);
+  }
 }
 
 void printLdr(int instruction)
 {
-  printf("\n");
+  int destReg = (instruction & 0x00E0) >> 9;
+  int baseReg = (instruction & 0x01C0) >> 6;
+  int offset = (instruction & 0x003F) << 26;
+  offset = offset >> 26;
+  printf("LDR\tR%d, R%d, #%d\n", destReg, baseReg, offset); 
 }
 
 void printStr(int instruction)
 {
-  printf("\n");
+  int srcReg = (instruction & 0x00E0) >> 9;
+  int baseReg = (instruction & 0x01C0) >> 6;
+  int offset = (instruction & 0x003F) << 26;
+  offset = offset >> 26;
+  printf("STR\tR%d, R%d, #%d\n", srcReg, baseReg, offset);
 }
 
-void printRti()
+void printRti(int instruction)
 {
-  printf("RTI");
+  printf("RTI\n");
 }
 
 void printNot(int instruction)
 {
-  printf("\n");
+  int destReg = (instruction & 0x00E0) >> 9;
+  int srcReg = (instruction & 0x01C0) >> 6;
+  printf("NOT\tR%d, R%d\n", destReg, srcReg);
 }
 
 void printLdi(int instruction, int pc)
 {
-  printf("\n");
+  int destReg = (instruction & 0x00E0) >> 9;
+  int offset = (instruction & 0x01FF) << 23;
+  offset = offset >> 23;
+  printf("LDI\tR%d, x%X\n", destReg, pc + offset);
 }
 
 void printSti(int instruction, int pc)
 {
-  printf("\n");
+  int srcReg = (instruction & 0x00E0) >> 9;
+  int offset = (instruction & 0x01FF) << 23;
+  offset = offset >> 23;
+  printf("STI\tR%d, x%X\n", srcReg, pc + offset);
 }
 
 void printJmpRet(int instruction)
 {
-  printf("\n");
+  int baseReg = (instruction & 0x01C0) >> 6;
+  if(baseReg == 7)
+  {
+    printf("RET\n");
+  }
+  else
+  {
+    printf("JMP\tR%d\n", baseReg);
+  }
 }
 
 void printLea(int instruction, int pc)
 {
-  printf("\n");
+  int destReg = (instruction & 0x00E0) >> 9;
+  int offset = (instruction & 0x01FF) << 23;
+  offset = offset >> 23;
+  printf("LEA\tR%d, x%X\n", destReg, pc + offset);
 }
 
-void printTrap(int)
+void printTrap(int instruction)
 {
-  printf("\n");
+  int trapVector = instruction & 0x00FF;
+  switch(trapVector)
+  {
+    case 0x0020:
+      printf("GETC\n");
+      break;
+    case 0x0021:
+      printf("OUT\n");
+      break;
+    case 0x0022:
+      printf("PUTS\n");
+      break;
+    case 0x0023:
+      printf("IN\n");
+      break;
+    case 0x0024:
+      printf("PUTSP\n");
+      break;
+    case 0x0025:
+      printf("HALT\n");
+      break;
+    default:
+      break;
+  }
 }
