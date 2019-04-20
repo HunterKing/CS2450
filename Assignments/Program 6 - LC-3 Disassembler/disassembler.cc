@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #define LIMIT 40
+#define DESTREG 0x0E00
+#define PCOFFSET9 0x01FF
+#define BASESRCREG 0x01C0
 
 void printAssembly(char filename[]);
 void printBr(int, int);
@@ -42,7 +45,7 @@ void printAssembly(char filename[])
     int count = 0;
     int instruction = 0; 
     int pc = 0;
-    fscanf(infile, "%d", &pc); //Read the first hex val as the starting pc.
+    fscanf(infile, "%x", &pc); //Read the first hex val as the starting pc.
     while (fscanf(infile, "%x", &instruction) != EOF && count < LIMIT) {
       count++;  //Count number of lines for limit
       //Remove the print and put your code here
@@ -112,7 +115,7 @@ void printBr(int instruction, int pc)
   int n = (instruction & 0x0800) >> 11;
   int z = (instruction & 0x0400) >> 10;
   int p = (instruction & 0x0200) >> 9;
-  int offset = (instruction & 0x01FF) << 23;
+  int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("BR");
   if(n)
@@ -126,8 +129,8 @@ void printBr(int instruction, int pc)
 
 void printAdd(int instruction)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int srcRegOne = (instruction & 0x01C0) >> 6;
+  int destReg = (instruction & DESTREG) >> 9;
+  int srcRegOne = (instruction & BASESRCREG) >> 6;
   printf("ADD\tR%d, R%d, ", destReg, srcRegOne);
   if(instruction & 0x0020) //check if bit 5 is set to 1
   {
@@ -144,16 +147,16 @@ void printAdd(int instruction)
 
 void printLd(int instruction, int pc)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int offset = (instruction & 0x01FF) << 23;
+  int destReg = (instruction & DESTREG) >> 9;
+  int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("LD\tR%d, x%X\n", destReg, pc + offset);
 }
 
 void printSt(int instruction, int pc)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int offset = (instruction & 0x01FF) << 23;
+  int destReg = (instruction & DESTREG) >> 9;
+  int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("ST\tR%d, x%X\n", destReg, pc + offset);
 }
@@ -168,15 +171,15 @@ void printJsrJsrr(int instruction, int pc)
   }
   else
   {
-    int baseReg = (instruction & 0x01C0) >> 6;
+    int baseReg = (instruction & BASESRCREG) >> 6;
     printf("JSRR\tR%d\n", baseReg);
   }
 }
 
 void printAnd(int instruction)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int srcRegOne = (instruction & 0x01C0) >> 6;
+  int destReg = (instruction & DESTREG) >> 9;
+  int srcRegOne = (instruction & BASESRCREG) >> 6;
   if((instruction & 0x0020) >> 5)
   {
     int immediate = (instruction & 0x001F) << 27;
@@ -192,8 +195,8 @@ void printAnd(int instruction)
 
 void printLdr(int instruction)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int baseReg = (instruction & 0x01C0) >> 6;
+  int destReg = (instruction & DESTREG) >> 9;
+  int baseReg = (instruction & BASESRCREG) >> 6;
   int offset = (instruction & 0x003F) << 26;
   offset = offset >> 26;
   printf("LDR\tR%d, R%d, #%d\n", destReg, baseReg, offset); 
@@ -201,8 +204,8 @@ void printLdr(int instruction)
 
 void printStr(int instruction)
 {
-  int srcReg = (instruction & 0x00E0) >> 9;
-  int baseReg = (instruction & 0x01C0) >> 6;
+  int srcReg = (instruction & DESTREG) >> 9;
+  int baseReg = (instruction & BASESRCREG) >> 6;
   int offset = (instruction & 0x003F) << 26;
   offset = offset >> 26;
   printf("STR\tR%d, R%d, #%d\n", srcReg, baseReg, offset);
@@ -215,30 +218,30 @@ void printRti(int instruction)
 
 void printNot(int instruction)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int srcReg = (instruction & 0x01C0) >> 6;
+  int destReg = (instruction & DESTREG) >> 9;
+  int srcReg = (instruction & BASESRCREG) >> 6;
   printf("NOT\tR%d, R%d\n", destReg, srcReg);
 }
 
 void printLdi(int instruction, int pc)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int offset = (instruction & 0x01FF) << 23;
+  int destReg = (instruction & DESTREG) >> 9;
+  int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("LDI\tR%d, x%X\n", destReg, pc + offset);
 }
 
 void printSti(int instruction, int pc)
 {
-  int srcReg = (instruction & 0x00E0) >> 9;
-  int offset = (instruction & 0x01FF) << 23;
+  int srcReg = (instruction & DESTREG) >> 9;
+  int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("STI\tR%d, x%X\n", srcReg, pc + offset);
 }
 
 void printJmpRet(int instruction)
 {
-  int baseReg = (instruction & 0x01C0) >> 6;
+  int baseReg = (instruction & BASESRCREG) >> 6;
   if(baseReg == 7)
   {
     printf("RET\n");
@@ -251,8 +254,8 @@ void printJmpRet(int instruction)
 
 void printLea(int instruction, int pc)
 {
-  int destReg = (instruction & 0x00E0) >> 9;
-  int offset = (instruction & 0x01FF) << 23;
+  int destReg = (instruction & DESTREG) >> 9;
+  int offset = (instruction & PCOFFSET9) << 23;
   offset = offset >> 23;
   printf("LEA\tR%d, x%X\n", destReg, pc + offset);
 }
