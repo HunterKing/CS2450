@@ -1,2 +1,2 @@
 # Decompiled Homework Assignments
-These homework assignments were assigned such that we would write all of our instructions in hex and run them in an LC-3 simulator before we were allowed to use the Assembler. This is hard to read, however, so these are their contents disassembled using [Program 6 - LC-3 Disassembler](Assignments/Program 6 - LC-3 Disassembler).
+These homework assignments were assigned such that we would write all of our instructions in hex and run them in an LC-3 simulator before we were allowed to use the Assembler. This is hard to read, however, so these are their contents disassembled using [Program 6 - LC-3 Disassembler](https://github.com/HunterKing/CS2450/tree/master/Assignments/Program%206%20-%20LC-3%20Disassembler).
